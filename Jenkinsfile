@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        PATH = 'C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\bin;C:\Program Files\Amazon\AWSCLIV2;C:\Program Files\Kubernetes;'
         AWS_REGION = 'ap-south-1'
         AWS_ACCOUNT_ID = '949677835392'
         ECR_REPO = '949677835392.dkr.ecr.ap-south-1.amazonaws.com/threetier-frontend'
