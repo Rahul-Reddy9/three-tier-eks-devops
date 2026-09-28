@@ -20,7 +20,7 @@ pipeline {
 
         stage('Build Frontend') {
             steps {
-                bat 'C:\Program Files\Docker\Docker\resources\bin\docker.exe build -t threetier-frontend:%BUILD_NUMBER% .\\app\\frontend'
+                bat 'C:/Progra~1/Docker/Docker/resources/bin/docker.exe build -t threetier-frontend:%BUILD_NUMBER% .\\app\\frontend'
             }
         }
 
@@ -32,8 +32,8 @@ pipeline {
 
         stage('Push Frontend Image') {
             steps {
-                bat 'C:\Program Files\Docker\Docker\resources\bin\docker.exe tag threetier-frontend:%BUILD_NUMBER% %ECR_REPO%:%BUILD_NUMBER%'
-                bat 'C:\Program Files\Docker\Docker\resources\bin\docker.exe push %ECR_REPO%:%BUILD_NUMBER%'
+                bat 'C:/Progra~1/Docker/Docker/resources/bin/docker.exe tag threetier-frontend:%BUILD_NUMBER% %ECR_REPO%:%BUILD_NUMBER%'
+                bat 'C:/Progra~1/Docker/Docker/resources/bin/docker.exe push %ECR_REPO%:%BUILD_NUMBER%'
             }
         }
 
