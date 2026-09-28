@@ -23,11 +23,11 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: public.ecr.aws/w8u5e4v2/workshop-frontend:v1
+        image: 949677835392.dkr.ecr.ap-south-1.amazonaws.com/threetier-frontend:v3
         imagePullPolicy: Always
         env:
           - name: REACT_APP_BACKEND_URL
-            value: "http://app.sandipdas.in/api/tasks" #$API_ELB_PUBLIC_FQDN #add your API_Load_Balancer DNS manually here if app does not run
+            value: "/api/tasks" #$API_ELB_PUBLIC_FQDN #add your API_Load_Balancer DNS manually here if app does not run
         ports:
         - containerPort: 3000
         # livenessProbe:

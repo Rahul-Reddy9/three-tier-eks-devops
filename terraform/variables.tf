@@ -1,24 +1,26 @@
 variable "cluster_name" {
-  type = string
-  default = "my-eks-cluster"
+  type    = string
+  default = "threetier-eks"
 }
 
 variable "cluster_version" {
-  type = number
-  default = 1.25
+  type    = string
+  default = "1.36"
 }
 
 variable "region" {
-  type = string
-  default = "us-west-2"
+  type    = string
+  default = "ap-south-1"
 }
 
 variable "availability_zones" {
-  type = list
-  default = ["us-west-2a", "us-west-2b"]
+  type = list(string)
+
+  default = [
+    "ap-south-1a",
+    "ap-south-1b"
+  ]
 }
-
-
 
 variable "addons" {
   type = list(object({
@@ -29,19 +31,19 @@ variable "addons" {
   default = [
     {
       name    = "kube-proxy"
-      version = "v1.25.6-eksbuild.1"
+      version = "v1.36.0-eksbuild.25"
     },
     {
       name    = "vpc-cni"
-      version = "v1.12.2-eksbuild.1"
+      version = "v1.23.1-eksbuild.1"
     },
     {
       name    = "coredns"
-      version = "v1.9.3-eksbuild.2"
+      version = "v1.14.3-eksbuild.23"
     },
     {
       name    = "aws-ebs-csi-driver"
-      version = "v1.23.0-eksbuild.1"
+      version = "v1.66.0-eksbuild.1"
     }
   ]
 }

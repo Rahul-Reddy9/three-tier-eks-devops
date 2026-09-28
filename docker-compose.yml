@@ -1,0 +1,37 @@
+services:
+
+  mongodb:
+    image: mongo:8
+    container_name: threetier-mongodb
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build:
+      context: ./app/backend
+    container_name: threetier-backend
+    environment:
+      MONGO_CONN_STR: mongodb://mongodb:27017/threetier
+      PORT: 8080
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./app/frontend
+    container_name: threetier-frontend
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:8081/api/tasks
+      HOST: 0.0.0.0
+      PORT: 3000
+      NODE_OPTIONS: --openssl-legacy-provider
+      DISABLE_ESLINT_PLUGIN: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:

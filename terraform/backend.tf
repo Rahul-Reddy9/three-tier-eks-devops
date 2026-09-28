@@ -1,9 +1,2 @@
-terraform {
-  backend "s3" {
-    bucket = "sandip-demo-tfstate-bucket"
-    key    = "eks/terraform.tfstate"
-    region = "us-west-2"
-  }
-}
-
-
+# Using local Terraform state for this learning project.
+# This avoids depending on the original repository owner's S3 bucket.

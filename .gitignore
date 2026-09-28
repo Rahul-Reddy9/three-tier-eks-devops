@@ -166,3 +166,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 build
+terraform/tfplan
+terraform/general-console.txt
