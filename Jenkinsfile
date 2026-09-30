@@ -41,8 +41,8 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 bat 'aws eks update-kubeconfig --name %EKS_CLUSTER% --region %AWS_REGION%'
-                bat 'kubectl set image deployment/frontend frontend=%ECR_REPO%:%BUILD_NUMBER% -n %NAMESPACE%'
-                bat 'kubectl rollout status deployment/frontend -n %NAMESPACE%'
+                bat 'C:/Users/Administrator/AppData/Local/Programs/DockerDesktop/resources/bin/kubectl.exe set image deployment/frontend frontend=%ECR_REPO%:%BUILD_NUMBER% -n %NAMESPACE%'
+                bat 'C:/Users/Administrator/AppData/Local/Programs/DockerDesktop/resources/bin/kubectl.exe rollout status deployment/frontend -n %NAMESPACE%'
             }
         }
     }
