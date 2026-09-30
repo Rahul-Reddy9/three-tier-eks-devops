@@ -1,148 +1,288 @@
-# three-tier-eks-iac
+# Three-Tier EKS DevOps Project
 
-# Prerequisite 
+A production-style three-tier application deployed on **Amazon EKS** with **Docker, Amazon ECR, Kubernetes, AWS Application Load Balancer, Terraform, and Jenkins CI/CD**.
 
-**Install Kubectl**
-https://kubernetes.io/docs/tasks/tools/
+## Architecture
 
+```text
+                    Internet
+                       |
+                       v
+              AWS Application
+              Load Balancer
+                 (ALB)
+                /     \
+               /       \
+              v         v
+        Frontend      Backend API
+        React         Node.js
+        :3000         :8080
+                         |
+                         v
+                    MongoDB
+                     :27017
 
-**Install Helm**
-https://helm.sh/docs/intro/install/
-
+CI/CD:
+GitHub -> Jenkins -> Docker Build -> Amazon ECR -> EKS Deployment
 ```
-helm repo update
+
+## Technologies
+
+* AWS EKS
+* AWS VPC
+* AWS Application Load Balancer
+* Amazon ECR
+* Terraform
+* Kubernetes
+* Docker
+* Jenkins
+* GitHub
+* React
+* Node.js
+* MongoDB
+
+## AWS Infrastructure
+
+| Component              | Configuration    |
+| ---------------------- | ---------------- |
+| Region                 | `ap-south-1`     |
+| EKS Cluster            | `threetier-eks`  |
+| Kubernetes             | `1.36`           |
+| Namespace              | `workshop`       |
+| Worker Nodes           | On-Demand + Spot |
+| Load Balancer          | AWS ALB          |
+| Database               | MongoDB          |
+| Infrastructure as Code | Terraform        |
+
+## Kubernetes Components
+
+The `workshop` namespace contains:
+
+* Frontend Deployment
+* Backend API Deployment
+* MongoDB Deployment
+* Frontend Service
+* Backend API Service
+* MongoDB Service
+* AWS ALB Ingress
+
+Check the deployment:
+
+```powershell
+kubectl get pods -n workshop
+kubectl get svc,ingress -n workshop
 ```
 
-**Install/update latest AWS CLI:** (make sure install v2 only)
-https://aws.amazon.com/cli/
+## Application Access
 
-#update the Kubernetes context
-aws eks update-kubeconfig --name my-eks-cluster --region us-west-2
+The application is exposed through an AWS Application Load Balancer.
 
-# verify access:
+* Frontend: `/`
+* Backend API: `/api`
+
+## Docker
+
+The frontend application is containerized using Docker.
+
+Build locally:
+
+```powershell
+docker build -t threetier-frontend:v1 .\app\frontend
 ```
-kubectl auth can-i "*" "*"
+
+Production frontend image repository:
+
+```text
+949677835392.dkr.ecr.ap-south-1.amazonaws.com/threetier-frontend
+```
+
+## Jenkins CI/CD Pipeline
+
+The Jenkins pipeline automatically performs:
+
+1. Checkout source code from GitHub
+2. Build the frontend Docker image
+3. Authenticate with Amazon ECR
+4. Push the Docker image to ECR
+5. Update the EKS kubeconfig
+6. Update the Kubernetes frontend deployment
+7. Wait for the Kubernetes rollout to complete
+
+### Pipeline Flow
+
+```text
+GitHub
+   |
+   v
+Jenkins
+   |
+   v
+Docker Build
+   |
+   v
+Amazon ECR
+   |
+   v
+Amazon EKS
+   |
+   v
+Kubernetes Rolling Update
+```
+
+## Jenkins Pipeline Verification
+
+The CI/CD pipeline has been successfully tested.
+
+Successful pipeline stages:
+
+```text
+Build Frontend       SUCCESS
+Login to ECR         SUCCESS
+Push Frontend Image  SUCCESS
+Deploy to EKS        SUCCESS
+Rollout Status       SUCCESS
+```
+
+The pipeline successfully deployed frontend image version `14` to the EKS cluster.
+
+## Terraform
+
+Terraform is used to provision the AWS infrastructure.
+
+Main infrastructure includes:
+
+* VPC
+* Public and private subnets
+* NAT Gateway
+* EKS cluster
+* EKS managed node groups
+* EKS add-ons
+* IAM roles
+* EBS CSI driver
+* AWS Load Balancer Controller
+
+Terraform state is maintained locally for this learning project.
+
+## Useful Commands
+
+### Check EKS cluster
+
+```powershell
+aws eks describe-cluster --name threetier-eks --region ap-south-1
+```
+
+### Check Kubernetes nodes
+
+```powershell
 kubectl get nodes
 ```
 
-# Verify autoscaler running:
-```
-kubectl get pods -n kube-system
-```
+### Check application pods
 
-# Check Autoscaler logs
-```
-kubectl logs -f \
-  -n kube-system \
-  -l app=cluster-autoscaler
+```powershell
+kubectl get pods -n workshop
 ```
 
-# Check load balancer logs
-```
-kubectl logs -f -n kube-system \
-  -l app.kubernetes.io/name=aws-load-balancer-controller
-```
+### Check services and ingress
 
-<!-- aws eks update-kubeconfig \
-  --name my-eks \
-  --region us-west-2 \
-  --profile eks-admin -->
-
-
-# Buid Docker image :
-**For Mac:**
-
-```
-export DOCKER_CLI_EXPERIMENTAL=enabled
-aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/w8u5e4v2
+```powershell
+kubectl get svc,ingress -n workshop
 ```
 
-Buid Front End :
+### Check frontend rollout
 
-```
-docker buildx build --platform linux/amd64 -t workshop-frontend:v1 . 
-docker tag workshop-frontend:v1 public.ecr.aws/w8u5e4v2/workshop-frontend:v1
-docker push public.ecr.aws/w8u5e4v2/workshop-frontend:v1
+```powershell
+kubectl rollout status deployment/frontend -n workshop
 ```
 
+### Check application logs
 
-Buid Back End :
-
-```
-docker buildx build --platform linux/amd64 -t workshop-backend:v1 . 
-docker tag workshop-backend:v1 public.ecr.aws/w8u5e4v2/workshop-backend:v1
-docker push public.ecr.aws/w8u5e4v2/workshop-backend:v1
+```powershell
+kubectl logs deployment/frontend -n workshop
+kubectl logs deployment/api -n workshop
 ```
 
-**For Linux/Windows:**
+## Monitoring
 
-Buid Front End :
+Kubernetes resource metrics are currently not enabled in the cluster.
 
-```
-docker build -t workshop-frontend:v1 . 
-docker tag workshop-frontend:v1 public.ecr.aws/w8u5e4v2/workshop-frontend:v1
-docker push public.ecr.aws/w8u5e4v2/workshop-frontend:v1
-```
+Running:
 
-
-Buid Back End :
-
-```
-docker build -t workshop-backend:v1 . 
-docker tag workshop-backend:v1 public.ecr.aws/w8u5e4v2/workshop-backend:v1
-docker push public.ecr.aws/w8u5e4v2/workshop-backend:v1
+```powershell
+kubectl top pods -n workshop
 ```
 
+currently returns:
 
-
-**Create Namespace**
-```
-kubectl create ns workshop
-
-kubectl config set-context --current --namespace workshop
+```text
+Metrics API not available
 ```
 
-# MongoDB Database Setup
+Metrics Server can be added later if resource-level monitoring is required.
 
-**To create MongoDB Resources**
-```
-cd k8s_manifests/mongo_v1
-kubectl apply -f secrets.yaml
-kubectl apply -f deploy.yaml
-kubectl apply -f service.yaml
-```
+## Project Structure
 
-# Backend API Setup
-
-Create NodeJs API deployment by running the following command:
-```
-kubectl apply -f backend-deployment.yaml
-kubectl apply -f backend-service.yaml
-``
-
-
-**Frontend setup**
-
-Create the Frontend  resource. In the terminal run the following command:
-```
-kubectl apply -f frontend-deployment.yaml
-kubectl apply -f frontend-service.yaml
-```
-
-Finally create the final load balancer to allow internet traffic:
-```
-kubectl apply -f full_stack_lb.yaml
+```text
+three-tier-eks-devops/
+|
+├── app/
+│   ├── frontend/
+│   └── backend/
+|
+├── k8s_manifests/
+│   ├── backend-deployment.yaml
+│   ├── backend-service.yaml
+│   ├── frontend-deployment.yaml
+│   ├── frontend-service.yaml
+│   ├── full_stack_lb.yaml
+│   └── mongo/
+|
+├── terraform/
+|
+├── docker-compose.yml
+├── Jenkinsfile
+└── README.md
 ```
 
+## Local Development
 
-# Any issue with the pods ? check logs:
-kubectl logs -f POD_ID -f
+Docker Compose can be used to run the application locally:
 
+```powershell
+docker compose up --build
+```
 
-# Grafana setup 
-Username: admin
-Password: prom-operator
+Frontend:
 
-Import Dashboard ID: 1860
+```text
+http://localhost:3000
+```
 
-Exlore more at: https://grafana.com/grafana/dashboards/
+Stop the local containers:
+
+```powershell
+docker compose down
+```
+
+## Key DevOps Concepts Demonstrated
+
+* Infrastructure as Code with Terraform
+* Containerization with Docker
+* Container registry using Amazon ECR
+* Kubernetes orchestration with Amazon EKS
+* Kubernetes Deployments and Services
+* Kubernetes Ingress
+* AWS Application Load Balancer
+* IAM and IRSA
+* Rolling deployments
+* Jenkins CI/CD automation
+* GitHub source control
+* On-Demand and Spot worker nodes
+
+## Author
+
+**G. Rahul Reddy**
+
+B.Tech – Information Technology
+
+GitHub: `Rahul-Reddy9`
